@@ -35,6 +35,7 @@
 #include <time.h>
 #include <signal.h>
 #include <sys/time.h>
+#include <math.h>
 #include <netinet/in.h>
 #include <pthread.h>
 
@@ -57,8 +58,6 @@ static void *clean_thread(void *);
 static int lock_sessions(void), unlock_sessions(void),
     lock_stats(void), unlock_stats(void);
 
-static unsigned long isqrt(unsigned long) __attribute__ ((const));
-    
 int
 init_stats(void) {
     stats = malloc((statssz = INITIAL_STAT_SZ) * sizeof(unsigned long));
@@ -465,36 +464,6 @@ stats_var(struct stats_results *results, int percentile) {
 
 unsigned long
 stats_std(struct stats_results *results, int percentile) {
-    return isqrt(stats_var(results, percentile));
-    
-}
-
-// Based in code from
-// http://www.codecodex.com/wiki/Calculate_an_integer_square_root#C
-// It stipulates that content is available under the
-// GNU Free Documentation License
-static unsigned long
-isqrt(unsigned long x)
-{
-    unsigned long op, res, one;
-
-    op = x;
-    res = 0;
-
-    // "one" starts at the highest power of four <= than the argument.
-    one = 1;
-    while (one < op) one <<= 2;
-    while (one > op) one >>= 2;
-
-    while (one) {
-        if (op >= res + one) {
-            op -= res + one;
-            res += one << 1;
-        }
-        res >>= 1;
-        one >>= 2;
-    }
-    
-    return res;
+    return sqrtl(stats_var(results, percentile));
     
 }
